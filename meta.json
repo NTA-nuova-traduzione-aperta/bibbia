@@ -1,0 +1,13 @@
+{
+  "name": "Nuova Traduzione Aperta",
+  "abbr": "NTA",
+  "lang": "it",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "attribution": "NTA — Nuova Traduzione Aperta (https://nta-nuova-traduzione-aperta.github.io), derivata dalla Open Translation Bible, edizione italiana (https://openbible.uk), CC BY-SA 4.0.",
+  "upstream": "https://github.com/OpenTranslationBible/open-bible",
+  "numbering": "Versetti nella numerazione delle Bibbie italiane (es. Levitico 5:20-26 = 6:1-7 delle inglesi); i titoli dei Salmi aprono il versetto 1.",
+  "books": 66,
+  "verses": 31104,
+  "section_titles": 24
+}
