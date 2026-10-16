@@ -32,6 +32,7 @@ libro sui testi originali.
 - `x` — testo del versetto; `\n` separa le righe delle parti poetiche e delle citazioni
 - `t` — titolo di sezione che precede il versetto (facoltativo)
 - `p` — `1` se il versetto apre un paragrafo (facoltativo)
+- `n` — nota per il lettore (facoltativa): varianti dei manoscritti, scelte di traduzione; nelle edizioni stampate va a piè di pagina
 
 ### Formato di `interlineare/`
 
