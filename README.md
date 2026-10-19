@@ -45,7 +45,9 @@ NTA corrispondente (0 = prima parola, -1 = nessuna).
 1. Le proposte (segnalazioni, revisori, revisione assistita da un modello linguistico confrontando
    ogni versetto con la Berean Standard Bible e con ebraico e greco) passano da una revisione umana.
 2. Le modifiche approvate entrano qui con un commit e sono elencate in `modifiche/`.
-3. A intervalli regolari esce una versione (`vAAAA.MM`) con il testo e i formati scaricabili.
+3. A intervalli regolari esce una revisione stabile, chiamata con anno e mese di uscita (`AA.MM`: la
+   prima è la **26.11**, novembre 2026), con un tag Git dello stesso nome e i formati scaricabili. Il
+   ramo `main` è il testo in revisione. Stato della revisione: https://nta-nuova-traduzione-aperta.github.io/revisione/
 
 Hai trovato un errore? [Apri una segnalazione](../../issues) indicando libro, capitolo e versetto.
 
