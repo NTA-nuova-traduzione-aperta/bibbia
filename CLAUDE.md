@@ -7,6 +7,6 @@ Testo pubblico della **NTA (Nuova Traduzione Aperta)**, CC BY-SA 4.0. Struttura 
   `packages/server`). Non modificarli a mano: le correzioni passano dal CMS, che tiene lo storico
   (`verse_edits`) da cui nasce `modifiche/`.
 - Stato del progetto, prossimi passi e procedura di revisione dei libri:
-  `packages/server/docs/piano-nta.md` nel repo del CMS (branch `feature/revisione-nta`).
+  `packages/server/docs/piano-nta.md` nel repo del CMS (branch `main`).
 - Un commit per libro rivisto, con il numero di versetti e titoli cambiati nel messaggio.
 - Mai testo di traduzioni protette da copyright (NR, CEI, ND…): la NTA deve restare CC BY-SA.
