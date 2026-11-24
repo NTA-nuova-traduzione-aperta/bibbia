@@ -49,6 +49,14 @@ NTA corrispondente (0 = prima parola, -1 = nessuna).
    prima è la **26.11**, novembre 2026), con un tag Git dello stesso nome e i formati scaricabili. Il
    ramo `main` è il testo in revisione. Stato della revisione: https://nta-nuova-traduzione-aperta.github.io/revisione/
 
+### Formati scaricabili
+
+Ogni release (tag `AA.MM`) allega, generati da GitHub Actions con gli script in `strumenti/`:
+`nta.pdf` (A5, una colonna, da leggere), `nta-stampa.pdf` (A5, due colonne, per la stampa
+economica), `nta.epub`, `nta.json` (tutto il testo in un file), `nta-libri.zip` e `interlineare.zip`.
+Per generarli in locale: `pip install -r strumenti/requisiti.txt`, poi
+`python strumenti/genera.py --formato lettura|stampa|epub --revisione 26.11 --out <file>`.
+
 Hai trovato un errore? [Apri una segnalazione](../../issues) indicando libro, capitolo e versetto.
 
 ## Licenza
