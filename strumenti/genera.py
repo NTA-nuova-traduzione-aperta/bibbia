@@ -7,8 +7,8 @@ Uso (dalla radice del repo, con `pip install -r strumenti/requisiti.txt`):
   python strumenti/genera.py --formato epub    --revisione 26.11 --out nta.epub
   python strumenti/genera.py --formato stampa  --revisione 26.11 --solo "1:1-3,19:23" --out prova.pdf
 
-Formati: "lettura" (PDF A5, una colonna), "stampa" (PDF A5, due colonne, edizione economica),
-"epub" (EPUB 3, copertina e indice per libri e capitoli). --solo limita a libro:capitoli (prove).
+Formati: "lettura" (PDF A5, una colonna), "stampa" (PDF A5, due colonne, edizione economica, con le
+presentazioni dei libri: non va nella release pubblica), "epub" (EPUB 3, copertina e indice per libri e capitoli). --solo limita a libro:capitoli (prove).
 """
 import argparse
 import glob
@@ -116,11 +116,12 @@ def main():
     ap.add_argument("--revisione", required=True, help="es. 26.11")
     ap.add_argument("--out", required=True)
     ap.add_argument("--solo", help="libro:capitoli, per le prove")
-    ap.add_argument("--senza-presentazioni", action="store_true", help="solo il testo biblico")
+    ap.add_argument("--senza-presentazioni", action="store_true", help="stampa: solo il testo biblico")
     a = ap.parse_args()
 
     meta = json.load(open(os.path.join(RADICE, "meta.json"), encoding="utf-8"))
-    libri = carica(a.solo, a.senza_presentazioni)
+    # le presentazioni dei libri per ora vanno solo nell'edizione per la stampa
+    libri = carica(a.solo, a.senza_presentazioni or a.formato != "stampa")
     dati = {
         "formato": a.formato,
         "revisione": a.revisione,

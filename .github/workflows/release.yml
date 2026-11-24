@@ -30,7 +30,10 @@ jobs:
         run: |
           mkdir -p dist
           python strumenti/genera.py --formato lettura --revisione "$REV" --out dist/nta.pdf
-          python strumenti/genera.py --formato stampa  --revisione "$REV" --out dist/nta-stampa.pdf
+          # l'edizione per la stampa (con le presentazioni dei libri) non va nella release pubblica:
+          # resta tra gli artefatti del job
+          mkdir -p stampa
+          python strumenti/genera.py --formato stampa  --revisione "$REV" --out stampa/nta-stampa.pdf
           python strumenti/genera.py --formato epub    --revisione "$REV" --out dist/nta.epub
       - name: JSON
         run: python strumenti/pacchetti.py --revisione "$REV" --dir dist
@@ -38,6 +41,10 @@ jobs:
         with:
           name: nta-${{ env.REV }}
           path: dist/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nta-${{ env.REV }}-stampa
+          path: stampa/
       - name: Release
         if: github.event_name == 'push'
         env:
@@ -48,7 +55,6 @@ jobs:
             --notes "La Sacra Bibbia, Nuova Traduzione Aperta, revisione $REV (CC BY-SA 4.0).
 
           - **nta.pdf**: PDF A5 da leggere (una colonna)
-          - **nta-stampa.pdf**: PDF A5 per la stampa economica (due colonne)
           - **nta.epub**: per e-reader e app di lettura
           - **nta.json**: tutto il testo in un file; **nta-libri.zip**: un file per libro
           - **interlineare.zip**: ebraico e greco con gloss e allineamento alla NTA

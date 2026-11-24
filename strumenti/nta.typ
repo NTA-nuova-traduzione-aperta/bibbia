@@ -178,11 +178,8 @@
         if m != none { (text(weight: "bold", m.captures.at(0)), m.captures.at(1)) } else { ([], riga) }
       }).flatten())
   }
-  if stampa {
-    block(width: 100%, above: 1.2em, below: 1.2em, align(center, text(fill: blu, size: 1.1em)[✦]))
-  } else {
-    pagebreak(weak: true)
-  }
+  // il libro comincia dalla pagina successiva
+  pagebreak(weak: true)
 }
 
 #for lib in D.libri {

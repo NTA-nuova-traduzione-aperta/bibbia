@@ -53,8 +53,9 @@ NTA corrispondente (0 = prima parola, -1 = nessuna).
 ### Formati scaricabili
 
 Ogni release (tag `AA.MM`) allega, generati da GitHub Actions con gli script in `strumenti/`:
-`nta.pdf` (A5, una colonna, da leggere), `nta-stampa.pdf` (A5, due colonne, per la stampa
-economica), `nta.epub`, `nta.json` (tutto il testo in un file), `nta-libri.zip` e `interlineare.zip`.
+`nta.pdf` (A5, una colonna, da leggere), `nta.epub`, `nta.json` (tutto il testo in un file),
+`nta-libri.zip` e `interlineare.zip`. L'edizione per la stampa (`--formato stampa`, A5 a due colonne, con le
+presentazioni dei libri) si genera a parte e non è tra i file della release.
 Per generarli in locale: `pip install -r strumenti/requisiti.txt`, poi
 `python strumenti/genera.py --formato lettura|stampa|epub --revisione 26.11 --out <file>`.
 
