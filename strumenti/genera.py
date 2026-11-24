@@ -6,6 +6,8 @@ Uso (dalla radice del repo, con `pip install -r strumenti/requisiti.txt`):
   python strumenti/genera.py --formato stampa  --revisione 26.11 --out nta-stampa.pdf
   python strumenti/genera.py --formato epub    --revisione 26.11 --out nta.epub
   python strumenti/genera.py --formato stampa  --revisione 26.11 --solo "1:1-3,19:23" --out prova.pdf
+  python strumenti/genera.py --formato stampa  --revisione 26.11 --solo "19,20,40,41,42,43,44" \
+      --copertina "Salmi|Proverbi|Vangeli e Atti" --out nta-salmi-vangeli.pdf
 
 Formati: "lettura" (PDF A5, una colonna), "stampa" (PDF A5, due colonne, edizione economica, con le
 presentazioni dei libri: non va nella release pubblica), "epub" (EPUB 3, copertina e indice per libri e capitoli). --solo limita a libro:capitoli (prove).
@@ -98,16 +100,22 @@ def pdf(dati):
 
     with tempfile.TemporaryDirectory() as tmp:
         prepara_typst(tmp, dati)
-        return typst.compile(os.path.join(tmp, "nta.typ"), root=tmp, font_paths=[FONT])
+        return typst.compile(os.path.join(tmp, "nta.typ"), root=tmp, font_paths=[FONT], sys_inputs=ingressi(dati))
 
 
-def copertina_png():
+def ingressi(dati):
+    """Parametri per copertina.typ (che si compila anche da sola, senza dati.json)."""
+    return {"copertina": json.dumps(dati.get("copertina") or [], ensure_ascii=False), "revisione": dati["revisione"]}
+
+
+def copertina_png(dati):
     import typst
 
     with tempfile.TemporaryDirectory() as tmp:
         for nome in FILE_TYPST:
             shutil.copy(os.path.join(QUI, nome), tmp)
-        return typst.compile(os.path.join(tmp, "copertina.typ"), root=tmp, font_paths=[FONT], format="png", ppi=220)
+        return typst.compile(os.path.join(tmp, "copertina.typ"), root=tmp, font_paths=[FONT], format="png", ppi=220,
+                             sys_inputs=ingressi(dati))
 
 
 def main():
@@ -116,6 +124,7 @@ def main():
     ap.add_argument("--revisione", required=True, help="es. 26.11")
     ap.add_argument("--out", required=True)
     ap.add_argument("--solo", help="libro:capitoli, per le prove")
+    ap.add_argument("--copertina", help='edizione con una scelta di libri: parole della copertina, es. "Salmi|Proverbi|Vangeli e Atti"')
     ap.add_argument("--senza-presentazioni", action="store_true", help="stampa: solo il testo biblico")
     a = ap.parse_args()
 
@@ -129,6 +138,7 @@ def main():
         "licenza_url": meta["license_url"],
         "numerazione": meta["numbering"],
         "libri": libri,
+        "copertina": [p.strip() for p in a.copertina.split("|")] if a.copertina else [],
     }
     if a.formato == "epub":
         from epub import scrivi_epub
@@ -136,7 +146,7 @@ def main():
         with tempfile.TemporaryDirectory() as tmp:
             qr = os.path.join(tmp, "qr.svg")
             qr_svg(qr)
-            scrivi_epub(a.out, dati, copertina_png(), open(qr, encoding="utf-8").read(), SITO, REPO)
+            scrivi_epub(a.out, dati, copertina_png(dati), open(qr, encoding="utf-8").read(), SITO, REPO)
     else:
         with open(a.out, "wb") as fh:
             fh.write(pdf(dati))

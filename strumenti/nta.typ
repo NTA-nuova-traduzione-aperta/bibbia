@@ -10,7 +10,9 @@
 #let corpo = if stampa { 8.4pt } else { 10.5pt }
 #let colonne = if stampa { 2 } else { 1 }
 
-#set document(title: "La Sacra Bibbia · Nuova Traduzione Aperta · " + D.revisione, author: "NTA — Nuova Traduzione Aperta")
+// edizione con una scelta di libri: le parole della copertina (es. Salmi, Proverbi, Vangeli e Atti)
+#let scelta = D.at("copertina", default: ())
+#set document(title: (if scelta.len() > 0 { scelta.join(" · ") } else { "La Sacra Bibbia" }) + " · Nuova Traduzione Aperta · " + D.revisione, author: "NTA — Nuova Traduzione Aperta")
 #set text(font: ("Libertinus Serif", "Noto Serif Hebrew"), lang: "it", size: corpo, hyphenate: true)
 // le parole ebraiche non vanno spezzate a fine riga
 #show regex("[\u{0590}-\u{05FF}]+( [\u{0590}-\u{05FF}]+)*"): it => box(it)
@@ -27,6 +29,10 @@
   #set align(center)
   #v(38mm)
   #text(size: 20pt, fill: blu)[La Sacra Bibbia]
+  #if scelta.len() > 0 {
+    v(3mm)
+    text(size: 11pt, style: "italic")[#scelta.join(" · ")]
+  }
   #v(4mm)
   #text(size: 12pt)[Nuova Traduzione Aperta]
   #v(2mm)
@@ -72,7 +78,7 @@
 
 // Indice dei libri
 #page[
-  #text(size: 13pt, fill: blu)[Libri della Bibbia]
+  #text(size: 13pt, fill: blu)[#if scelta.len() > 0 [Libri] else [Libri della Bibbia]]
   #v(4mm)
   #set text(size: if stampa { 8pt } else { 9.5pt })
   #columns(2, gutter: 6mm)[
@@ -85,7 +91,7 @@
     }
   ]
 ]
-#if stampa { context if calc.odd(here().page()) { page[] } }
+#if stampa { context if calc.even(here().page()) { page[] } }
 
 // ---------- Testo ----------
 #let marca-cap(libro, c) = [#metadata((libro: libro, c: c)) <cap>]
@@ -111,7 +117,7 @@
 }
 
 #set page(
-  margin: if stampa { (inside: 14mm, outside: 11mm, top: 15mm, bottom: 13mm) } else { (inside: 16mm, outside: 14mm, top: 17mm, bottom: 15mm) },
+  margin: if stampa { (inside: 20mm, outside: 11mm, top: 15mm, bottom: 13mm) } else { (inside: 16mm, outside: 14mm, top: 17mm, bottom: 15mm) },
   columns: colonne,
   header: intestazione,
   header-ascent: 35%,
