@@ -14,6 +14,7 @@ import argparse
 import glob
 import json
 import os
+import re
 import shutil
 import sys
 import tempfile
@@ -42,7 +43,24 @@ def filtro(spec):
     return out
 
 
-def carica(solo):
+def presentazione(file_testo, d):
+    """presentazioni/NN-libro.json (la scheda dell'app), con il testo NTA del versetto chiave."""
+    p = os.path.join(RADICE, "presentazioni", os.path.basename(file_testo))
+    if not os.path.exists(p):
+        return None
+    intro = json.load(open(p, encoding="utf-8"))
+    m = re.search(r"(\d+):(\d+)(?:-(\d+))?$", intro.get("keyVerse", ""))
+    if m:
+        c, a = int(m.group(1)), int(m.group(2))
+        b = int(m.group(3) or a)
+        testo = [v["x"] for v in d["verses"] if v["c"] == c and a <= v["v"] <= b]
+        if testo:
+            intro["keyVerseText"] = " ".join(testo)
+            intro["keyVerseRef"] = f"{d['name']} {c},{a}" + (f"-{b}" if b != a else "")
+    return intro
+
+
+def carica(solo, senza_presentazioni=False):
     sel = filtro(solo)
     libri = []
     for f in sorted(glob.glob(os.path.join(RADICE, "testo", "*.json"))):
@@ -53,7 +71,11 @@ def carica(solo):
             caps = sel[d["book"]]
             if caps is not None:
                 d["verses"] = [v for v in d["verses"] if v["c"] in caps]
-        libri.append({"book": d["book"], "name": d["name"], "abbr": d["abbr"], "verses": d["verses"]})
+        lib = {"book": d["book"], "name": d["name"], "abbr": d["abbr"], "verses": d["verses"]}
+        intro = presentazione(f, d)
+        if intro and not senza_presentazioni:
+            lib["intro"] = intro
+        libri.append(lib)
     return libri
 
 
@@ -94,10 +116,11 @@ def main():
     ap.add_argument("--revisione", required=True, help="es. 26.11")
     ap.add_argument("--out", required=True)
     ap.add_argument("--solo", help="libro:capitoli, per le prove")
+    ap.add_argument("--senza-presentazioni", action="store_true", help="solo il testo biblico")
     a = ap.parse_args()
 
     meta = json.load(open(os.path.join(RADICE, "meta.json"), encoding="utf-8"))
-    libri = carica(a.solo)
+    libri = carica(a.solo, a.senza_presentazioni)
     dati = {
         "formato": a.formato,
         "revisione": a.revisione,

@@ -17,6 +17,7 @@ libro sui testi originali.
 | `testo/` | Un file per libro (`41-marco.json`): titoli di sezione e versetti, uno per riga |
 | `interlineare/` | Ebraico e greco parola per parola, con numero Strong, gloss inglese e italiana e allineamento al testo NTA |
 | `modifiche/` | Elenco mensile delle modifiche al testo, con il motivo di ciascuna |
+| `presentazioni/` | Presentazione di ogni libro (tema, scrittore, periodo, contesto, riassunto, versetto chiave, personaggi, visione cristocentrica, struttura), la stessa dell'app HBible; i versetti sono solo riferimenti |
 | `meta.json` | Licenza, attribuzione, conteggi |
 
 ### Formato di `testo/`

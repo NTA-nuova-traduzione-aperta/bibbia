@@ -100,7 +100,11 @@
   if inizio == none { return }
   let a = inizio.value
   let b = fine.value
-  let rif = if a.libro != b.libro { a.libro + " " + str(a.c) + " – " + b.libro + " " + str(b.c) } else if a.c == b.c { a.libro + " " + str(a.c) } else { a.libro + " " + str(a.c) + "–" + str(b.c) }
+  // c = 0: pagine della presentazione del libro
+  if a.c == 0 and b.c == 0 { a = (libro: a.libro, c: -1); b = a }
+  else if a.c == 0 { a = (libro: b.libro, c: 1) }
+  else if b.c == 0 { b = a }
+  let rif = if a.c == -1 { a.libro + " · presentazione" } else if a.libro != b.libro { a.libro + " " + str(a.c) + " – " + b.libro + " " + str(b.c) } else if a.c == b.c { a.libro + " " + str(a.c) } else { a.libro + " " + str(a.c) + "–" + str(b.c) }
   set text(size: 7.5pt)
   let n = counter(page).display()
   if calc.even(p) { [#n #h(1fr) #smallcaps(rif)] } else { [#smallcaps(rif) #h(1fr) #n] }
@@ -131,10 +135,61 @@
 
 #let nota(v) = if "n" in v { footnote(v.n) } else { [] }
 
+// ---------- Presentazione del libro (la scheda dell'app) ----------
+#let etichetta(t) = block(above: 0.95em, below: 0.35em, sticky: true,
+  text(size: 0.82em, fill: blu, tracking: 0.06em, weight: "bold", upper(t)))
+#let paragrafi(t) = for p in t.split("\n\n") { par(p.trim()) }
+#let presentazione(lib) = {
+  let i = lib.intro
+  marca-cap(lib.name, 0)
+  set text(size: corpo * 0.94)
+  set par(justify: true)
+  if "theme" in i {
+    block(below: 0.9em, align(center, text(style: "italic", size: 1.06em, i.theme)))
+  }
+  for (k, nome) in (("author", "Scrittore"), ("period", "Periodo di scrittura"), ("context", "Contesto"), ("summary", "Riassunto")) {
+    if k in i { etichetta(nome); paragrafi(i.at(k)) }
+  }
+  if "keyVerseText" in i {
+    etichetta("Versetto chiave")
+    block(fill: rgb("#edf3f4"), inset: (x: 0.8em, y: 0.6em), radius: 2pt, width: 100%, {
+      set par(justify: false)
+      text(style: "italic", i.keyVerseText.replace("\n", " / "))
+      linebreak()
+      align(right, text(size: 0.9em, fill: luma(80), i.keyVerseRef))
+    })
+    if "keyVerseNote" in i { paragrafi(i.keyVerseNote) }
+  }
+  if "characters" in i {
+    etichetta("Personaggi importanti")
+    set par(justify: false, hanging-indent: 1em, spacing: 0.35em)
+    for riga in i.characters.split("\n").filter(x => x.trim() != "") {
+      let parti = riga.split(" — ")
+      if parti.len() > 1 { par[*#parti.first()* — #parti.slice(1).join(" — ")] } else { par(riga) }
+    }
+  }
+  if "christocentric" in i { etichetta("Visione cristocentrica"); paragrafi(i.christocentric) }
+  if "outline" in i {
+    etichetta("Struttura")
+    set par(justify: false, spacing: 0.3em)
+    grid(columns: (auto, 1fr), column-gutter: 0.8em, row-gutter: 0.35em,
+      ..i.outline.split("\n").filter(x => x.trim() != "").map(riga => {
+        let m = riga.match(regex("^([0-9][0-9,:–\\-]*)\\s+(.*)$"))
+        if m != none { (text(weight: "bold", m.captures.at(0)), m.captures.at(1)) } else { ([], riga) }
+      }).flatten())
+  }
+  if stampa {
+    block(width: 100%, above: 1.2em, below: 1.2em, align(center, text(fill: blu, size: 1.1em)[✦]))
+  } else {
+    pagebreak(weak: true)
+  }
+}
+
 #for lib in D.libri {
   pagebreak(weak: true, to: if stampa { none } else { none })
   let sal = lib.book == 19
   place(top + center, scope: "parent", float: true, clearance: 2mm, heading(level: 1, lib.name))
+  if "intro" in lib { presentazione(lib) }
   let pezzi = ()        // paragrafo in prosa in costruzione
   let cap = 0
   for v in lib.verses {

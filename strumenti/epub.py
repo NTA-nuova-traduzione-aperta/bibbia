@@ -21,6 +21,15 @@ sup.v { font-size: .62em; font-weight: bold; font-family: sans-serif; }
 a.nota { font-size: .7em; vertical-align: super; text-decoration: none; }
 aside.nota { font-size: .85em; }
 .centro { text-align: center; }
+section.intro { font-size: .94em; margin-bottom: 2em; }
+section.intro p.tema { font-style: italic; text-align: center; margin: 0 1em 1em; }
+section.intro h4 { font-family: sans-serif; font-size: .75em; letter-spacing: .06em; text-transform: uppercase; color: #1d3f7a; margin: 1.1em 0 .3em; }
+section.intro blockquote { background: #edf3f4; margin: .3em 0 .5em; padding: .5em .8em; font-style: italic; }
+section.intro blockquote cite { display: block; text-align: right; font-style: normal; font-size: .9em; color: #555; }
+section.intro p.riga { text-align: left; margin: 0 0 .25em; padding-left: 1em; text-indent: -1em; }
+section.intro table { border-collapse: collapse; }
+section.intro td { vertical-align: top; padding: 0 .8em .2em 0; }
+p.fregio { text-align: center; color: #1d3f7a; margin: 1.5em 0; }
 .dedica { text-align: center; font-style: italic; margin-top: 35%; }
 .piccolo { font-size: .85em; text-align: left; }
 img.qr { width: 6em; }
@@ -38,9 +47,44 @@ def pagina(titolo, corpo, extra_head=""):
             f'<body>{corpo}</body></html>')
 
 
+def intro_xhtml(i):
+    out = ['<section class="intro" epub:type="introduction" role="doc-introduction">']
+    par = lambda t: "".join(f"<p>{e(p.strip())}</p>" for p in t.split("\n\n") if p.strip())
+    if i.get("theme"):
+        out.append(f'<p class="tema">{e(i["theme"])}</p>')
+    for k, nome in (("author", "Scrittore"), ("period", "Periodo di scrittura"), ("context", "Contesto"), ("summary", "Riassunto")):
+        if i.get(k):
+            out.append(f"<h4>{nome}</h4>{par(i[k])}")
+    if i.get("keyVerseText"):
+        out.append(f'<h4>Versetto chiave</h4><blockquote><p>{e(i["keyVerseText"]).replace(chr(10), "<br/>")}</p>'
+                   f'<cite>{e(i["keyVerseRef"])}</cite></blockquote>' + par(i.get("keyVerseNote", "")))
+    if i.get("characters"):
+        righe = []
+        for r in i["characters"].split("\n"):
+            if not r.strip():
+                continue
+            nome, sep, resto = r.partition(" — ")
+            righe.append(f'<p class="riga"><b>{e(nome)}</b> — {e(resto)}</p>' if sep else f'<p class="riga">{e(r)}</p>')
+        out.append("<h4>Personaggi importanti</h4>" + "".join(righe))
+    if i.get("christocentric"):
+        out.append(f"<h4>Visione cristocentrica</h4>{par(i['christocentric'])}")
+    if i.get("outline"):
+        rows = []
+        for r in i["outline"].split("\n"):
+            if not r.strip():
+                continue
+            cap, _, tit = r.partition(" ")
+            rows.append(f"<tr><td><b>{e(cap)}</b></td><td>{e(tit)}</td></tr>")
+        out.append("<h4>Struttura</h4><table>" + "".join(rows) + "</table>")
+    out.append('</section><p class="fregio">✦</p>')
+    return "".join(out)
+
+
 def libro_xhtml(lib, contatore):
     sal = lib["book"] == 19
     out = [f'<section epub:type="chapter" role="doc-chapter"><h1>{e(lib["name"])}</h1>']
+    if lib.get("intro"):
+        out.append(intro_xhtml(lib["intro"]))
     note = []
     prosa = []
     cap = 0
@@ -120,6 +164,8 @@ def scrivi_epub(percorso, dati, copertina_png, qr_svg, sito, repo):
         caps = sorted({v["c"] for v in lib["verses"]})
         etich = "Salmo " if lib["book"] == 19 else ""
         sotto = "".join(f'<li><a href="{nome}#c{c}">{etich}{c}</a></li>' for c in caps)
+        if lib.get("intro"):
+            sotto = f'<li><a href="{nome}">Presentazione</a></li>' + sotto
         nav_libri.append(f'<li><a href="{nome}">{e(lib["name"])}</a><ol>{sotto}</ol></li>')
 
     nav = pagina("Indice",
