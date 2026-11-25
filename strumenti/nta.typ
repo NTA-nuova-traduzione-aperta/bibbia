@@ -81,15 +81,26 @@
   #text(size: 13pt, fill: blu)[#if scelta.len() > 0 [Libri] else [Libri della Bibbia]]
   #v(4mm)
   #set text(size: if stampa { 8pt } else { 9.5pt })
-  #columns(2, gutter: 6mm)[
-    #context {
-      for hd in query(heading.where(level: 1)) {
-        let p = counter(page).at(hd.location()).first()
-        link(hd.location())[#hd.body #box(width: 1fr, repeat[.#h(2pt)]) #p]
-        linebreak()
-      }
+  // Antico Testamento a sinistra, Nuovo a destra
+  #let voce(lib) = context {
+    let q = query(label("libro-" + str(lib.book)))
+    if q.len() > 0 {
+      let p = counter(page).at(q.first().location()).first()
+      link(q.first().location())[#lib.name #box(width: 1fr, repeat[.#h(2pt)]) #p]
+      linebreak()
     }
-  ]
+  }
+  #let gruppo(titolo, libri) = if libri.len() > 0 {
+    block(below: 2mm, text(size: 0.95em, fill: blu, tracking: 0.05em, weight: "bold", upper(titolo)))
+    for lib in libri { voce(lib) }
+  }
+  #let at = D.libri.filter(l => l.book <= 39)
+  #let nt = D.libri.filter(l => l.book >= 40)
+  #if at.len() > 0 and nt.len() > 0 {
+    grid(columns: (1fr, 1fr), column-gutter: 6mm, gruppo("Antico Testamento", at), gruppo("Nuovo Testamento", nt))
+  } else {
+    columns(2, gutter: 6mm, { gruppo("Antico Testamento", at); gruppo("Nuovo Testamento", nt) })
+  }
 ]
 #if stampa { context if calc.even(here().page()) { page[] } }
 
@@ -142,16 +153,16 @@
 #let nota(v) = if "n" in v { footnote(v.n) } else { [] }
 
 // ---------- Presentazione del libro (la scheda dell'app) ----------
-#let etichetta(t) = block(above: 0.95em, below: 0.35em, sticky: true,
+#let etichetta(t) = block(above: 1.6em, below: 0.5em, sticky: true,
   text(size: 0.82em, fill: blu, tracking: 0.06em, weight: "bold", upper(t)))
 #let paragrafi(t) = for p in t.split("\n\n") { par(p.trim()) }
 #let presentazione(lib) = {
   let i = lib.intro
   marca-cap(lib.name, 0)
   set text(size: corpo * 0.94)
-  set par(justify: true)
+  set par(justify: true, spacing: 0.8em)
   if "theme" in i {
-    block(below: 0.9em, align(center, text(style: "italic", size: 1.06em, i.theme)))
+    block(below: 1.2em, align(center, text(style: "italic", size: 1.06em, i.theme)))
   }
   for (k, nome) in (("author", "Scrittore"), ("period", "Periodo di scrittura"), ("context", "Contesto"), ("summary", "Riassunto")) {
     if k in i { etichetta(nome); paragrafi(i.at(k)) }
@@ -168,7 +179,7 @@
   }
   if "characters" in i {
     etichetta("Personaggi importanti")
-    set par(justify: false, hanging-indent: 1em, spacing: 0.35em)
+    set par(justify: false, hanging-indent: 1em, spacing: 0.6em)
     for riga in i.characters.split("\n").filter(x => x.trim() != "") {
       let parti = riga.split(" — ")
       if parti.len() > 1 { par[*#parti.first()* — #parti.slice(1).join(" — ")] } else { par(riga) }
@@ -178,7 +189,7 @@
   if "outline" in i {
     etichetta("Struttura")
     set par(justify: false, spacing: 0.3em)
-    grid(columns: (auto, 1fr), column-gutter: 0.8em, row-gutter: 0.35em,
+    grid(columns: (auto, 1fr), column-gutter: 0.8em, row-gutter: 0.65em,
       ..i.outline.split("\n").filter(x => x.trim() != "").map(riga => {
         let m = riga.match(regex("^([0-9][0-9,:–\\-]*)\\s+(.*)$"))
         if m != none { (text(weight: "bold", m.captures.at(0)), m.captures.at(1)) } else { ([], riga) }
@@ -191,7 +202,7 @@
 #for lib in D.libri {
   pagebreak(weak: true, to: if stampa { none } else { none })
   let sal = lib.book == 19
-  place(top + center, scope: "parent", float: true, clearance: 2mm, heading(level: 1, lib.name))
+  place(top + center, scope: "parent", float: true, clearance: 2mm, [#heading(level: 1, lib.name)#label("libro-" + str(lib.book))])
   if "intro" in lib { presentazione(lib) }
   let pezzi = ()        // paragrafo in prosa in costruzione
   let cap = 0
